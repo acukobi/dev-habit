@@ -10,7 +10,7 @@ namespace DevHabit.Api.Controllers;
 [Route("habits")]
 public sealed class HabitsController(ApplicationDbContext dbContext) : ControllerBase
 {
-    [HttpGet] 
+    [HttpGet]
     public async Task<ActionResult<HabitsCollectionDto>> GetHabits()
     {
         List<HabitDto> habits = await dbContext.Habits.Select(h => new HabitDto
@@ -22,9 +22,9 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
             Frequency = new FrequencyDto
             {
                 Type = h.Frequency.Type,
-                TimesPerPeriod= h.Frequency.TimesPerPeriod,
+                TimesPerPeriod = h.Frequency.TimesPerPeriod,
             },
-            Target = new TargetDto 
+            Target = new TargetDto
             {
                 Unit = h.Target.Unit,
                 Value = h.Target.Value,
@@ -32,8 +32,8 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
             Status = h.Status,
             IsArchived = h.IsArchived,
             EndDate = h.EndDate,
-            Milestone = h.Milestone == null ? null : new MilestoneDto 
-            { 
+            Milestone = h.Milestone == null ? null : new MilestoneDto
+            {
                 Current = h.Milestone.Current,
                 Target = h.Milestone.Target
             },
@@ -43,5 +43,47 @@ public sealed class HabitsController(ApplicationDbContext dbContext) : Controlle
         }).ToListAsync();
 
         return Ok(habits);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<HabitDto>> GetHabit(string id)
+    {
+        HabitDto? habit = await dbContext.Habits
+            .Where(h => h.Id == id)
+            .Select(h => new HabitDto
+            {
+                Id = h.Id,
+                Name = h.Name,
+                Description = h.Description,
+                Type = h.Type,
+                Frequency = new FrequencyDto
+                {
+                    Type = h.Frequency.Type,
+                    TimesPerPeriod = h.Frequency.TimesPerPeriod,
+                },
+                Target = new TargetDto
+                {
+                    Unit = h.Target.Unit,
+                    Value = h.Target.Value,
+                },
+                Status = h.Status,
+                IsArchived = h.IsArchived,
+                EndDate = h.EndDate,
+                Milestone = h.Milestone == null ? null : new MilestoneDto
+                {
+                    Current = h.Milestone.Current,
+                    Target = h.Milestone.Target
+                },
+                CreatedAtUtc = h.CreatedAtUtc,
+                UpdatedAtUtc = h.UpdatedAtUtc,
+                LastCompletedAtUtc = h.LastCompletedAtUtc
+            }).FirstOrDefaultAsync();
+
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(habit);
     }
 }
