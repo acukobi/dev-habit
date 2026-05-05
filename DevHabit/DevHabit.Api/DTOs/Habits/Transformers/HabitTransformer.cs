@@ -1,17 +1,13 @@
-﻿using System.Xml.Linq;
-using DevHabit.Api.DTOs.Habits;
-using DevHabit.Api.Entities;
-using OpenTelemetry.Trace;
+﻿using DevHabit.Api.Entities;
 
-namespace DevHabit.Api.Transformers.Habits;
+namespace DevHabit.Api.DTOs.Habits.Transformers;
 
-public class HabitTransformer
+internal static class HabitTransformer
 {
-    public HabitDto MapHabitToHabitDto(Habit habit)
+    public static HabitDto ToDto(this Habit habit)
     {
         return new HabitDto
         {
-
             Id = habit.Id,
             Name = habit.Name,
             Description = habit.Description,
@@ -37,6 +33,32 @@ public class HabitTransformer
             CreatedAtUtc = habit.CreatedAtUtc,
             UpdatedAtUtc = habit.UpdatedAtUtc,
             LastCompletedAtUtc = habit.LastCompletedAtUtc
+        };
+    }
+    public static Habit ToEntity(this CreateHabitDto dto)
+    {
+        return new Habit
+        {
+            Id = $"h_{Guid.CreateVersion7()}",
+            Name = dto.Name,
+            Description = dto.Description,
+            Type = dto.Type,
+            Frequency = new Frequency
+            {
+                Type = dto.Frequency.Type,
+                TimesPerPeriod = dto.Frequency.TimesPerPeriod,
+            },
+            Target = new Target
+            {
+                Unit = dto.Target.Unit,
+                Value = dto.Target.Value,
+            },  
+            EndDate = dto.EndDate,
+            Milestone = dto.Milestone == null ? null : new Milestone
+            {
+                Current = dto.Milestone.Current,
+                Target = dto.Milestone.Target
+            },
         };
     }
 }
